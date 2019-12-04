@@ -37,7 +37,7 @@ public class JWTokenVerify implements RequestStreamHandler{
 		
 		try {
     
-			//jwts.parser: Returns a new JwtParser instance that can be configured and then used to parse JWT strings.
+      //jwts.parser: Returns a new JwtParser instance that can be configured and then used to parse JWT strings.
       //SigningKey: the algorithm-specific signature verification key used to validate any discovered JWS digital signature.   
       //parseBase64Binary: Converts the string argument into an array of bytes.
       //getenv: feching key from lambda funtion "environment variable" which needs to be validate.
