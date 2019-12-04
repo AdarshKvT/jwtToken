@@ -46,11 +46,11 @@ public class JWTokenVerify implements RequestStreamHandler{
 			 Claims claims = Jwts.parser()
 			            .setSigningKey(DatatypeConverter.parseBase64Binary(System.getenv("jwtSecret")))
 			            .parseClaimsJws(token).getBody();
-
+				    
 			if(claims!=null && !(claims.isEmpty())) {
 				 response.put("claims", claims); 
-					response.put("message", "valid");
-					response.put("statusCode", 200);
+				 response.put("message", "valid");
+				 response.put("statusCode", 200);
 			}
 			else {
 				response.put("message", "invalid");
