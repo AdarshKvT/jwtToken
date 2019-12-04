@@ -1,0 +1,82 @@
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.bind.DatatypeConverter;
+
+import org.json.JSONObject;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+
+
+public class JWTokenVerify implements RequestStreamHandler{
+
+	@SuppressWarnings("unchecked")
+	public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
+
+		final JSONObject response = new JSONObject();
+  
+    //Build objectmappper "mapper" for mapping the json boby from the input.
+		ObjectMapper mapper= new ObjectMapper();
+    
+    //construct Jsonnode "root" tp parse through "mapper" jsonobjects.
+		JsonNode root = mapper.readTree(input);
+    
+    //fetch "params", "queryString" and "token" as a string "token" in text.
+		String token=root.path("params").path("querystring").path("token").asText();
+		
+		try {
+    
+			//jwts.parser: Returns a new JwtParser instance that can be configured and then used to parse JWT strings.
+      //SigningKey: the algorithm-specific signature verification key used to validate any discovered JWS digital signature.   
+      //parseBase64Binary: Converts the string argument into an array of bytes.
+      //getenv: feching key from lambda funtion "environment variable" which needs to be validate.
+      //parseClaimsJws: A Claims JWS is a JWT with a Claims body that has been cryptographically signed.
+
+			 Claims claims = Jwts.parser()
+			            .setSigningKey(DatatypeConverter.parseBase64Binary(System.getenv("jwtSecret")))
+			            .parseClaimsJws(token).getBody();
+
+			if(claims!=null && !(claims.isEmpty())) {
+				 response.put("claims", claims); 
+					response.put("message", "valid");
+					response.put("statusCode", 200);
+			}
+			else {
+				response.put("message", "invalid");
+				response.put("statusCode", 400);
+				
+			}
+
+		} catch (Exception e) {
+			response.put("message", e.getMessage());
+			response.put("statusCode", 400);
+		}
+
+		OutputStreamWriter writer;
+		try {
+			writer = new OutputStreamWriter(output, "UTF-8");
+			writer.write(response.toString());
+			writer.close();
+		} catch (UnsupportedEncodingException e) {
+			response.put("message", e.getMessage());
+			response.put("statusCode", 400);
+		} catch (IOException e) {
+			response.put("message", e.getMessage());
+			response.put("statusCode", 400);
+		}
+
+
+	}
+
+}
