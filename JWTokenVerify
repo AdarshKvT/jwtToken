@@ -75,8 +75,5 @@ public class JWTokenVerify implements RequestStreamHandler{
 			response.put("message", e.getMessage());
 			response.put("statusCode", 400);
 		}
-
-
 	}
-
 }
